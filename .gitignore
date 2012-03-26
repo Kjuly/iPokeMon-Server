@@ -1,0 +1,11 @@
+# Mac OS X
+*.DS_Store
+*~
+.*.sw[po]
+
+# Generated files
+*.o
+*.pyc
+
+# Ignore files
+ignorefiles/*
