@@ -49,6 +49,13 @@ class OpenID(object):
         else:
             return False
 
+    # Remove an OpenID from the user
+    def rm_from_user(self):
+        if self.redis.delete("%s:%s" % (self.provider, md5(self.identity).hexdigest())):
+            return True
+        else:
+            return False
+
     # After authenticated, return the authorized user's <userid>
     def authorized_user(self):
         return self.redis.get("%s:%s" % (self.provider, md5(self.identity).hexdigest()))
