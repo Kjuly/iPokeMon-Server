@@ -35,7 +35,7 @@ class OpenID(object):
                     1000,                # Money
                     "0",                 # Badges
                     "0",                 # Six Pokemons
-                    "0",                 # Pokedex
+                    "1010111",                 # Pokedex
                     0,                   # Number of Pokemons
                     "0_0_0_0_0_0_0_0_0"  # Bag
                     ):
@@ -63,10 +63,11 @@ class OpenID(object):
 
     # Authenticate the user by <provider> & <identity>
     def authenticate(self):
-        if self.redis.sismember("%s:%s" % (self.provider, md5(self.identity).hexdigest())):
-            return True
-        else:
-            return False
+        return self.redis.get("%s:%s" % (self.provider, md5(self.identity).hexdigest()))
+        #if self.redis.sismember("%s:%s" % (self.provider, md5(self.identity).hexdigest()), userid):
+        #    return True
+        #else:
+        #    return False
 
 # User
 # users: a set of <userid>
@@ -121,24 +122,23 @@ class User(object):
 
     
     # Add new user
-    def add(self, p_username, timeStarted, p_money, p_badges,
-            p_sixPokemons, p_pokedex, p_pokemons, bag):
+    def add(self, p_username, p_timeStarted, p_money, p_badges,
+            p_sixPokemons, p_pokedex, p_pokemons, p_bag):
         # If add user successed, i.e. <userid> does not exist in <users> set
         if self.redis.sadd("users", self.userid):
             #self.redis.hset("u:%s" % self.userid, "name",    p_username)
             #self.redis.hset("u:%s" % self.userid, "pokedex", p_pokedex)
-            self.redis.hmset(
-                    "u:%s" % self.userid, # Hash Key
-                    "id",          self.userid,
-                    "name",        p_username,
-                    "timeStarted", p_timeStarted,
-                    "money",       p_money,
-                    "badges",      p_badges,
-                    "sixPokemons", p_sixPokemons,
-                    "pokedex",     p_pokedex,
-                    "pokemons",    p_pokemons,
-                    "bag",         p_bag
-                    )
+            self.redis.hmset("u:%s" % self.userid, {
+                "id":          self.userid,
+                "name":        p_username,
+                "timeStarted": p_timeStarted,
+                "money":       p_money,
+                "badges":      p_badges,
+                "sixPokemons": p_sixPokemons,
+                "pokedex":     p_pokedex,
+                "pokemons":    p_pokemons,
+                "bag":         p_bag
+                })
             return True
         else:
             return False
@@ -160,7 +160,7 @@ class User(object):
 #       "fourMoves":   <fourMoves>,   # String. e.g. "1,2,3,4"
 #       "maxStats":    <maxStats>,    # String. e.g. "30,30,30,30,30,30"
 #       "currHP":      <currHP>,      # Number.
-#       "p_currEXP":   <currEXP>,     # Number.
+#       "currEXP":     <currEXP>,     # Number.
 #       "toNextLevel": <toNextLevel>, # Number.
 #       "memo":        <memo>         # String. e.g. "It is caught at ZJUT."
 #       }
@@ -180,6 +180,8 @@ class Pokemon(object):
             return
         import ast
         six_pokemons = ast.literal_eval(six_pokemons)
+        if type(six_pokemons) is int:
+            return six_pokemons
         pokemons = []
         for pokemon_uid in six_pokemons:
             pokemons.append(self.redis.hgetall("pm:%s:%s" % (self.userid, pokemon_uid)))
@@ -223,22 +225,21 @@ class Pokemon(object):
             p_fourMoves, p_maxStats, p_currHP, p_currEXP, p_toNextLevel, p_memo):
         if self.redis.sadd("pokedex:%s" % self.userid, p_uid):
             pokemon_uid = self.redis.incr("u:%s" % self.userid, "pokemons")
-            self.redis.hmset(
-                    "pm:%s:%s" % (self.userid, pokemon_uid), # Hash Key
-                    "uid",         pokemon_uid,
-                    "sid",         p_sid,
-                    "box",         p_box,
-                    "status",      p_status,
-                    "gender",      p_gender,
-                    "happiness",   p_happiness,
-                    "level",       p_level,
-                    "fourMoves",   p_fourMoves,
-                    "maxStats",    p_maxStats,
-                    "currHP",      p_currHP,
-                    "p_currEXP",   p_currEXP,
-                    "toNextLevel", p_toNextLevel,
-                    "memo",        p_memo
-                    )
+            self.redis.hmset("pm:%s:%s" % (self.userid, pokemon_uid), {
+                "uid":         pokemon_uid,
+                "sid":         p_sid,
+                "box":         p_box,
+                "status":      p_status,
+                "gender":      p_gender,
+                "happiness":   p_happiness,
+                "level":       p_level,
+                "fourMoves":   p_fourMoves,
+                "maxStats":    p_maxStats,
+                "currHP":      p_currHP,
+                "currEXP":     p_currEXP,
+                "toNextLevel": p_toNextLevel,
+                "memo":        p_memo
+                })
             return True
         else:
             return False
@@ -252,6 +253,73 @@ def index():
     r = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
     r.setnx('global:nextUserid', 0)
     return 'PMService is Running'
+
+# For Debug
+@server.route('/debug')
+def debug():
+    r = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
+    output = '<html>'
+    # USER
+    userids = r.smembers("users")
+    output += 'USERs:</br>'
+    for userid in userids:
+        user = User(userid).get()
+        chart = '<tr>#ID:'          + user['id']          + ' </tr>' \
+                '<tr>_Name:'        + user['name']        + ' </tr>' \
+                '<tr>_TimeStarted:' + user['timeStarted'] + ' </tr>' \
+                '<tr>_Money:'       + user['money']       + ' </tr>' \
+                '<tr>_Badges:'      + user['badges']      + ' </tr>' \
+                '<tr>_SixPokemons:' + user['sixPokemons'] + ' </tr>' \
+                '<tr>_Pokedex:'     + user['pokedex']     + ' </tr>' \
+                '<tr>_Pokemons:'    + user['pokemons']    + ' </tr>' \
+                '<tr>_Bag:'         + user['bag']         + ' </tr>' \
+                '</br>'
+        output += chart
+
+        # USER's POKEMON
+        pokemon = Pokemon(userid)
+        output += '</br>USER:' + userid + ' - SIXPOKEMONs:</br>'
+        sixpokemons = pokemon.get_six()
+        if type(sixpokemons) is list:
+            for p in sixpokemons:
+                chart = '<tr>#UID:'        + str(p['uid'])         + ' </tr>' \
+                        '<tr>_SID:'        + str(p['sid'])         + ' </tr>' \
+                        '<tr>_box:'        + str(p['box'])         + ' </tr>' \
+                        '<tr>_status:'     + str(p['status'])      + ' </tr>' \
+                        '<tr>_gender:'     + str(p['gender'])      + ' </tr>' \
+                        '<tr>_happiness:'  + str(p['happiness'])   + ' </tr>' \
+                        '<tr>_level:'      + str(p['level'])       + ' </tr>' \
+                        '<tr>_fourMoves:'  + p['fourMoves']        + ' </tr>' \
+                        '<tr>_maxStats:'   + p['maxStats']         + ' </tr>' \
+                        '<tr>_currHP:'     + str(p['currHP'])      + ' </tr>' \
+                        '<tr>_currEXP:'    + str(p['currEXP'])     + ' </tr>' \
+                        '<tr>toNextLevel:' + str(p['toNextLevel']) + ' </tr>' \
+                        '<tr>memo:'        + p['memo']             + ' </tr>' \
+                        '</br>'
+                output += chart
+
+        # USER's POKEDEX
+        output += '</br>USER:' + userid + ' - POKEDEX:</br>'
+        pokedex = pokemon.get_all()
+        if type(pokedex) is list:
+            for p in pokedex:
+                chart = '<tr>#UID:'        + str(p['uid'])         + ' </tr>' \
+                        '<tr>_SID:'        + str(p['sid'])         + ' </tr>' \
+                        '<tr>_box:'        + str(p['box'])         + ' </tr>' \
+                        '<tr>_status:'     + str(p['status'])      + ' </tr>' \
+                        '<tr>_gender:'     + str(p['gender'])      + ' </tr>' \
+                        '<tr>_happiness:'  + str(p['happiness'])   + ' </tr>' \
+                        '<tr>_level:'      + str(p['level'])       + ' </tr>' \
+                        '<tr>_fourMoves:'  + p['fourMoves']        + ' </tr>' \
+                        '<tr>_maxStats:'   + p['maxStats']         + ' </tr>' \
+                        '<tr>_currHP:'     + str(p['currHP'])      + ' </tr>' \
+                        '<tr>_currEXP:'    + str(p['currEXP'])     + ' </tr>' \
+                        '<tr>toNextLevel:' + str(p['toNextLevel']) + ' </tr>' \
+                        '<tr>memo:'        + p['memo']             + ' </tr>' \
+                        '</br>'
+                output += chart
+    output += '</html>'
+    return output
 
 #
 # User Section
@@ -270,10 +338,12 @@ def get_user(provider, identity):
     # Return user data if the <userid> is valid
     if userid:
         return User(userid).get()
+    else:
+        return False
 
 # User - POST Data
 @server.post('/<provider>/<identity>/update')
-def update_user():
+def update_user(provider, identity):
     openID = OpenID(provider, identity)
     # If authenticated, update user data
     if openID.authenticate():
@@ -294,21 +364,24 @@ def update_user():
 # User - GET Pokemon
 # pm: PokeMon
 @server.get('/<provider>/<identity>/pm/<pokemon_uid:int>')
-def user_pokemon(pokemon_uid):
+def user_pokemon(provider, identity, pokemon_uid):
+    openID = OpenID(provider, identity)
     if openID.authenticate():
         return Pokemon(openID.authorized_user()).get_one(pokemon_uid)
 
 # User - GET Six Pokemons
 # 6pm: Six PokeMons
 @server.get('/<provider>/<identity>/6pm')
-def user_sixpokemons():
+def user_sixpokemons(provider, identity):
+    openID = OpenID(provider, identity)
     if openID.authenticate():
         return {"sixPokemons":Pokemon(openID.authorized_user()).get_six()}
 
 # User - GET Pokedex
 # pd: PokeDex
 @server.get('/<provider>/<identity>/pd')
-def user_pokedex():
+def user_pokedex(provider, identity):
+    openID = OpenID(provider, identity)
     if openID.authenticate():
         return {"pokedex":Pokemon(openID.authorized_user()).get_all()}
 
