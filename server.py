@@ -21,7 +21,7 @@ class OpenID(object):
         self.provider = p_provider
         self.identity = p_identity
 
-    # The user has no OpenID added before, so add new
+    # The user has no OpenID added before, so add new, and return the new <userid>
     def add(self):
         # Get the new user's ID
         userid = self.redis.incr("global:nextUserid")
@@ -29,8 +29,8 @@ class OpenID(object):
         # then add new user
         if self.redis.setnx("%s:%s" % (self.provider, md5(self.identity).hexdigest()), userid):
             self.redis.sadd("openid:%s" % userid, self.provider)
-            return User(userid).add(
-                    "user%s" % userid,   # Name
+            if User(userid).add(
+                    "Trainer%s" % userid,   # Name
                     time.time(),         # Time started
                     1000,                # Money
                     "0",                 # Badges
@@ -38,9 +38,10 @@ class OpenID(object):
                     "0",                 # Pokedex
                     0,                   # Number of Pokemons
                     "0_0_0_0_0_0_0_0_0"  # Bag
-                    )
+                    ):
+                return userid
         else:
-            return False
+            return 0
 
     # The user has one or several OpenIDs, add one more OpenID for user
     def add_to_user(self):
@@ -255,41 +256,61 @@ def index():
 #
 # User Section
 #
-# User - GET <userid>
-@server.get('/oauth/<provider>/<identity>')
-def oauth(provider, identity):
+# User - GET <userid>, if valid, return user data
+@server.get('/<provider>/<identity>')
+def get_user(provider, identity):
     openID = OpenID(provider, identity)
+    userid = None
+    # If authenticated, get the <userid>
     if openID.authenticate():
-        return openID.authorized_user()
-
-# User - GET Data
-@server.get('/user/<userid:int>')
-def user(userid):
-    return User(userid).get()
+        userid = openID.authorized_user()
+    # Else, add a new OpenID for a new user
+    else:
+        userid = openID.add()
+    # Return user data if the <userid> is valid
+    if userid:
+        return User(userid).get()
 
 # User - POST Data
-@server.post('/user/<userid:int>')
-def update_user(userid):
-    if User(userid).update():
-        return True
+@server.post('/<provider>/<identity>/update')
+def update_user():
+    openID = OpenID(provider, identity)
+    # If authenticated, update user data
+    if openID.authenticate():
+        new_user_data = {
+                'name'        : 'Trainer000001',
+                'money'       : 123456,
+                'badges'      : '1',
+                'sixPokemons' : '1,2,3,4,5,6',
+                'pokedex'     : '0101001001111',
+                'pokemons'    : 7,
+                'bag'         : '0_0_0_0_0_0_0_0_0'
+                }
+        return User(openID.authorized_user()).update(new_user_data)
     else:
         return False
 
 
 # User - GET Pokemon
-@server.get('/user/<userid:int>/<pokemon_uid:int>')
-def user_pokemon(userid, pokemon_uid):
-    return Pokemon(userid).get_one(pokemon_uid)
+# pm: PokeMon
+@server.get('/<provider>/<identity>/pm/<pokemon_uid:int>')
+def user_pokemon(pokemon_uid):
+    if openID.authenticate():
+        return Pokemon(openID.authorized_user()).get_one(pokemon_uid)
 
 # User - GET Six Pokemons
-@server.get('/user/<userid:int>/sixpokemons')
-def user_sixpokemons(userid):
-    return {"sixPokemons":Pokemon(userid).get_six()}
+# 6pm: Six PokeMons
+@server.get('/<provider>/<identity>/6pm')
+def user_sixpokemons():
+    if openID.authenticate():
+        return {"sixPokemons":Pokemon(openID.authorized_user()).get_six()}
 
 # User - GET Pokedex
-@server.get('/user/<userid:int>/pokedex')
-def user_pokedex(userid):
-    return {"pokedex":Pokemon(userid).get_all()}
+# pd: PokeDex
+@server.get('/<provider>/<identity>/pd')
+def user_pokedex():
+    if openID.authenticate():
+        return {"pokedex":Pokemon(openID.authorized_user()).get_all()}
 
 
 #
