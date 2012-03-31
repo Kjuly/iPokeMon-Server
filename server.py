@@ -1,4 +1,4 @@
-from bottle import Bottle, run
+from bottle import Bottle, run, request, response
 import redis
 from hashlib import md5
 import time
@@ -7,6 +7,27 @@ server = Bottle()
 RADIS_HOST = '127.0.0.1'
 REDIS_PORT = 6379
 REDIS_DB   = 8
+
+# Request Header
+class Header(object):
+    def __init__(self, headers):
+        self.headers = headers
+
+    # Make sure the request is sent via App
+    def auth(self):
+        if self.headers.get('key') == '123456':
+            return True
+        else:
+            return False
+
+    # Get <provider>
+    def get_provider(self):
+        return self.headers.get('provider')
+
+    # Get <identity>
+    def get_identity(self):
+        return self.headers.get('identity')
+
 
 # <xxx>  : Basic
 # <!xxx!>: Encrypted
@@ -324,10 +345,30 @@ def debug():
 #
 # User Section
 #
-# User - GET <userid>, if valid, return user data
-@server.get('/<provider>/<identity>')
-def get_user(provider, identity):
-    openID = OpenID(provider, identity)
+# User - GET <userid>, if valid, return user's id
+@server.get('/id')
+def get_userid():
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
+    userid = None
+    # If authenticated, get the <userid>
+    if openID.authenticate():
+        userid = openID.authorized_user()
+    # Else, add a new OpenID for a new user
+    else:
+        userid = openID.add()
+    return {'userID':userid}
+
+# User - GET if valid, return user's data
+# u: User
+@server.get('/u')
+def get_user():
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
     userid = None
     # If authenticated, get the <userid>
     if openID.authenticate():
@@ -342,9 +383,12 @@ def get_user(provider, identity):
         return False
 
 # User - POST Data
-@server.post('/<provider>/<identity>/update')
+@server.post('/update')
 def update_user(provider, identity):
-    openID = OpenID(provider, identity)
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
     # If authenticated, update user data
     if openID.authenticate():
         new_user_data = {
@@ -363,25 +407,34 @@ def update_user(provider, identity):
 
 # User - GET Pokemon
 # pm: PokeMon
-@server.get('/<provider>/<identity>/pm/<pokemon_uid:int>')
-def user_pokemon(provider, identity, pokemon_uid):
-    openID = OpenID(provider, identity)
+@server.get('/pm/<pokemon_uid:int>')
+def user_pokemon(pokemon_uid):
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return Pokemon(openID.authorized_user()).get_one(pokemon_uid)
 
 # User - GET Six Pokemons
 # 6pm: Six PokeMons
-@server.get('/<provider>/<identity>/6pm')
-def user_sixpokemons(provider, identity):
-    openID = OpenID(provider, identity)
+@server.get('/6pm')
+def user_sixpokemons():
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return {"sixPokemons":Pokemon(openID.authorized_user()).get_six()}
 
 # User - GET Pokedex
 # pd: PokeDex
-@server.get('/<provider>/<identity>/pd')
-def user_pokedex(provider, identity):
-    openID = OpenID(provider, identity)
+@server.get('/pd')
+def user_pokedex():
+    header = Header(request.headers)
+    if not header.auth():
+        return False;
+    openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return {"pokedex":Pokemon(openID.authorized_user()).get_all()}
 
