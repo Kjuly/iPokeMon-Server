@@ -55,7 +55,7 @@ class OpenID(object):
                     time.time(),         # Time started
                     1000,                # Money
                     "0",                 # Badges
-                    "0",                 # Six Pokemons
+                    "",                  # Six Pokemons
                     "1010111",                 # Pokedex
                     0,                   # Number of Pokemons
                     "0_0_0_0_0_0_0_0_0"  # Bag
@@ -124,19 +124,9 @@ class User(object):
 
     # Update data for user
     def update(self, p_userdata):
-        if self.redis.sismember("u:%s" % self.userid):
-            self.redis.hmset(
-                    "u:%s" % self.userid, # Hash Key
-                    p_userdata            # Mapping
-                    #"name",        p_userdata['username'],
-                    #"timeStarted", p_userdata['timeStarted'],
-                    #"money",       p_userdata['money'],
-                    #"badges",      p_userdata['badges',
-                    #"sixPokemons", p_userdata['sixPokemons'],
-                    #"pokedex",     p_userdata['pokedex'],
-                    #"pokemons",    p_userdata['pokemons'],
-                    #"bag",         p_userdata['bag']
-                    )
+        #if self.redis.sismember("u:%s" % self.userid):
+        if self.redis.sismember("users", self.userid):
+            self.redis.hmset("u:%s" % self.userid, p_userdata)
             return True
         else:
             return False
@@ -384,25 +374,20 @@ def get_user():
 
 # User - POST Data
 @server.post('/update')
-def update_user(provider, identity):
+def update_user():
     header = Header(request.headers)
     if not header.auth():
         return False;
     openID = OpenID(header.get_provider(), header.get_identity())
     # If authenticated, update user data
     if openID.authenticate():
-        new_user_data = {
-                'name'        : 'Trainer000001',
-                'money'       : 123456,
-                'badges'      : '1',
-                'sixPokemons' : '1,2,3,4,5,6',
-                'pokedex'     : '0101001001111',
-                'pokemons'    : 7,
-                'bag'         : '0_0_0_0_0_0_0_0_0'
-                }
-        return User(openID.authorized_user()).update(new_user_data)
-    else:
-        return False
+        data = request.params
+        userdata = {}
+        for key in data.keys():
+            userdata[key] = data.get(key)
+        if User(openID.authorized_user()).update(userdata):
+            return "Sync Done"
+    return False
 
 
 # User - GET Pokemon
