@@ -9,3 +9,5 @@
 
 # Ignore files
 ignorefiles/*
+
+dump.rdb
