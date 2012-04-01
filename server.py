@@ -386,8 +386,8 @@ def update_user():
         for key in data.keys():
             userdata[key] = data.get(key)
         if User(openID.authorized_user()).update(userdata):
-            return "Sync Done"
-    return False
+            return {'v':1}
+    return {'v':0}
 
 
 # User - GET Pokemon
