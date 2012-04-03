@@ -28,6 +28,10 @@ class Header(object):
     def get_identity(self):
         return self.headers.get('identity')
 
+    # Get <name>
+    def get_name(self):
+        return self.headers.get('name')
+
     # Get <region>
     def get_region(self):
         return self.headers.get('region')
@@ -126,6 +130,9 @@ class User(object):
         #return self.redis.hget("u:%s" % userid, "name")
         return self.redis.hgetall("u:%s" % self.userid)
 
+    def check_name_uniqueness(self, p_username):
+        return self.redis.sismember("usernames",p_username)
+
     # Update data for user
     def update(self, p_userdata):
         #if self.redis.sismember("u:%s" % self.userid):
@@ -141,6 +148,7 @@ class User(object):
             p_sixPokemons, p_pokedex, p_pokemons, p_bag):
         # If add user successed, i.e. <userid> does not exist in <users> set
         if self.redis.sadd("users", self.userid):
+            self.redis.sadd("usernames", p_username)
             #self.redis.hset("u:%s" % self.userid, "name",    p_username)
             #self.redis.hset("u:%s" % self.userid, "pokedex", p_pokedex)
             self.redis.hmset("u:%s" % self.userid, {
@@ -375,6 +383,32 @@ def get_user():
         return User(userid).get()
     else:
         return False
+
+# User - POST with <name>, check uniqueness for it
+@server.post('/cu')
+def get_user():
+    header = Header(request.headers)
+    if not header.auth():
+        return {'u':-1};
+    openID = OpenID(header.get_provider(), header.get_identity())
+    userid = None
+    # If authenticated, get the <userid>
+    if openID.authenticate():
+        userid = openID.authorized_user()
+    # Else, add a new OpenID for a new user
+    else:
+        userid = openID.add()
+    # Return result whether <name> is unique
+    uniqueness = -1
+    if userid:
+        # If ture, means exist, return 0
+        if User(userid).check_name_uniqueness(header.get_name()):
+            uniqueness = 0
+        else:
+            uniqueness = 1
+    else:
+        uniqueness = -1
+    return {'u':uniqueness}
 
 # User - POST Data
 @server.post('/update')
