@@ -28,6 +28,10 @@ class Header(object):
     def get_identity(self):
         return self.headers.get('identity')
 
+    # Get <region>
+    def get_region(self):
+        return self.headers.get('region')
+
 
 # <xxx>  : Basic
 # <!xxx!>: Encrypted
@@ -433,77 +437,18 @@ def pokemon_area(id):
     pass
 
 # Region - Wild Pokemons
-@server.route('/region/<id:int>/wildpokemons')
-def user_pokedex(id):
-    pokedex = { 'wildpokemons' :
-            [
-                {
-                    'uid' : 1,
-                    'sid' : 1,
-                    'status' : 1,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600},
-                {
-                    'uid' : 2,
-                    'sid' : 2,
-                    'status' : 2,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600},
-                {
-                    'uid' : 3,
-                    'sid' : 2,
-                    'status' : 2,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600},
-                {
-                    'uid' : 4,
-                    'sid' : 4,
-                    'status' : 3,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600},
-                {
-                    'uid' : 5,
-                    'sid' : 5,
-                    'status' : 3,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600},
-                {
-                    'uid' : 6,
-                    'sid' : 8,
-                    'status' : 3,
-                    'gender' : 1,
-                    'level' : 10,
-                    'fourMoves' : '1,30,26,2,35,31,3,25,21,4,5,4',
-                    'maxStats' : '145,49,49,65,65,45',
-                    'currHP' : 132,
-                    'currEXP' : 10240,
-                    'toNextLevel' : 3600}
-                ]}
+# wpm: Wild PokeMon
+@server.route('/wpm')
+def user_pokedex():
+    header = Header(request.headers)
+    region = header.get_region()
+    pokedex = { 'wildpokemons' : [
+        {'uid':1, 'sid':1, 'level':10},
+        {'uid':2, 'sid':2, 'level':10},
+        {'uid':3, 'sid':2, 'level':10},
+        {'uid':4, 'sid':4, 'level':10},
+        {'uid':5, 'sid':5, 'level':10},
+        {'uid':6, 'sid':8, 'level':10}]}
     return pokedex
 
 
