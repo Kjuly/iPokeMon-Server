@@ -51,14 +51,14 @@ class OpenID(object):
         if self.redis.setnx("%s:%s" % (self.provider, md5(self.identity).hexdigest()), userid):
             self.redis.sadd("openid:%s" % userid, self.provider)
             if User(userid).add(
-                    "Trainer%s" % userid,   # Name
-                    time.time(),         # Time started
-                    1000,                # Money
-                    "0",                 # Badges
-                    "",                  # Six Pokemons
+                    "Trainer%s" % userid, # Name
+                    time.time(),          # Time started
+                    1000,                 # Money
+                    "0,0,0",              # Badges
+                    "",                   # Six Pokemons
                     "1010111",                 # Pokedex
-                    0,                   # Number of Pokemons
-                    "0_0_0_0_0_0_0_0_0"  # Bag
+                    0,                    # Number of Pokemons
+                    "0_0_0_0_0_0_0_0_0"   # Bag
                     ):
                 return userid
         else:
