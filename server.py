@@ -475,10 +475,14 @@ def user_pokedex():
     pokedex = { 'wildpokemons' : [
         {'uid':1, 'sid':1, 'level':10},
         {'uid':2, 'sid':2, 'level':10},
-        {'uid':3, 'sid':2, 'level':10},
+        {'uid':3, 'sid':3, 'level':10},
         {'uid':4, 'sid':4, 'level':10},
         {'uid':5, 'sid':5, 'level':10},
-        {'uid':6, 'sid':8, 'level':10}]}
+        {'uid':6, 'sid':6, 'level':10},
+        {'uid':7, 'sid':7, 'level':10},
+        {'uid':8, 'sid':8, 'level':10},
+        {'uid':9, 'sid':9, 'level':10},
+        {'uid':10, 'sid':10, 'level':10}]}
     return pokedex
 
 
