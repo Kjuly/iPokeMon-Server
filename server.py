@@ -28,10 +28,6 @@ class Header(object):
     def get_identity(self):
         return self.headers.get('identity')
 
-    # Get <name>
-    def get_name(self):
-        return self.headers.get('name')
-
     # Get <region>
     def get_region(self):
         return self.headers.get('region')
@@ -402,7 +398,7 @@ def get_user():
     uniqueness = -1
     if userid:
         # If ture, means exist, return 0
-        if User(userid).check_name_uniqueness(header.get_name()):
+        if User(userid).check_name_uniqueness(request.params.get("name")):
             uniqueness = 0
         else:
             uniqueness = 1
