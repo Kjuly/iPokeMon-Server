@@ -54,13 +54,14 @@ class OpenID(object):
         # then add new user
         if self.redis.setnx("%s:%s" % (self.provider, md5(self.identity).hexdigest()), userid):
             self.redis.sadd("openid:%s" % userid, self.provider)
+            self.redis.setnx('u:%s:p'   % userid, 0) # UsersPokemonsID
             if User(userid).add(
                     "Trainer%s" % userid, # Name
                     time.time(),          # Time started
                     1000,                 # Money
                     "0,0,0",              # Badges
                     "",                   # Six Pokemons
-                    "1010111",                 # Pokedex
+                    "",                   # Pokedex
                     0,                    # Number of Pokemons
                     "0_0_0_0_0_0_0_0_0"   # Bag
                     ):
@@ -240,25 +241,11 @@ class Pokemon(object):
 
 
     # Add new tamed Pokemon
-    def add(self, p_sid, p_box, p_status, p_gender, p_happiness, p_level,
-            p_fourMoves, p_maxStats, p_currHP, p_currEXP, p_toNextLevel, p_memo):
-        if self.redis.sadd("pokedex:%s" % self.userid, p_uid):
-            pokemon_uid = self.redis.incr("u:%s" % self.userid, "pokemons")
-            self.redis.hmset("pm:%s:%s" % (self.userid, pokemon_uid), {
-                "uid":         pokemon_uid,
-                "sid":         p_sid,
-                "box":         p_box,
-                "status":      p_status,
-                "gender":      p_gender,
-                "happiness":   p_happiness,
-                "level":       p_level,
-                "fourMoves":   p_fourMoves,
-                "maxStats":    p_maxStats,
-                "currHP":      p_currHP,
-                "currEXP":     p_currEXP,
-                "toNextLevel": p_toNextLevel,
-                "memo":        p_memo
-                })
+    def add(self, p_pokemon_data):
+        if self.redis.sadd("pokedex:%s" % self.userid, p_pokemon_data["uid"]):
+            #pokemon_uid = self.redis.incr("u:%s" % self.userid, "pokemons")
+            pokemon_uid = self.redis.incr("u:%s:p" % self.userid)
+            self.redis.hmset("pm:%s:%s" % (self.userid, pokemon_uid), p_pokemon_data)
             return True
         else:
             return False
@@ -348,7 +335,7 @@ def debug():
 def get_userid():
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     userid = None
     # If authenticated, get the <userid>
@@ -365,7 +352,7 @@ def get_userid():
 def get_user():
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     userid = None
     # If authenticated, get the <userid>
@@ -381,11 +368,12 @@ def get_user():
         return False
 
 # User - POST with <name>, check uniqueness for it
+# cu: Check Uniqueness
 @server.post('/cu')
 def get_user():
     header = Header(request.headers)
     if not header.auth():
-        return {'u':-1};
+        return {'u':-1}
     openID = OpenID(header.get_provider(), header.get_identity())
     userid = None
     # If authenticated, get the <userid>
@@ -407,11 +395,12 @@ def get_user():
     return {'u':uniqueness}
 
 # User - POST Data
-@server.post('/update')
+# uu: Update User
+@server.post('/uu')
 def update_user():
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     # If authenticated, update user data
     if openID.authenticate():
@@ -430,7 +419,7 @@ def update_user():
 def user_pokemon(pokemon_uid):
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return Pokemon(openID.authorized_user()).get_one(pokemon_uid)
@@ -441,7 +430,7 @@ def user_pokemon(pokemon_uid):
 def user_sixpokemons():
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return {"sixPokemons":Pokemon(openID.authorized_user()).get_six()}
@@ -452,10 +441,27 @@ def user_sixpokemons():
 def user_pokedex():
     header = Header(request.headers)
     if not header.auth():
-        return False;
+        return False
     openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
         return {"pokedex":Pokemon(openID.authorized_user()).get_all()}
+
+# User - POST Pokemon
+# upm: Update PokeMon
+@server.post('/upm')
+def user_pokemon():
+    header = Header(request.headers)
+    if not header.auth():
+        return False
+    openID = OpenID(header.get_provider(), header.get_identity())
+    if openID.authenticate():
+        data = request.params
+        pokemon_data = {}
+        for key in data.keys():
+            pokemon_data[key] = data.get(key)
+        Pokemon(openID.authorized_user()).add(pokemon_data)
+    else:
+        return False
 
 
 #
