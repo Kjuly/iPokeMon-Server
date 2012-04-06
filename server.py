@@ -61,7 +61,7 @@ class OpenID(object):
                     1000,                 # Money
                     "0,0,0",              # Badges
                     "",                   # Six Pokemons
-                    "",                   # Pokedex
+                    "0",                   # Pokedex
                     0,                    # Number of Pokemons
                     "0:1,3,2,3,3,3,9,3,13,3,19,3,22,3:23,3,6,3,15,3:4,3,7,3,16,3:1,6:0:0:0:0"   # Bag
                     ):
