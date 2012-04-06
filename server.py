@@ -63,7 +63,7 @@ class OpenID(object):
                     "",                   # Six Pokemons
                     "",                   # Pokedex
                     0,                    # Number of Pokemons
-                    "0_0_0_0_0_0_0_0_0"   # Bag
+                    "0_1,3,2,3,3,3,9,3,13,3,19,3,22,3_23,3,6,3,15,3_4,3,7,3,16,3_1,6_0_0_0_0"   # Bag
                     ):
                 return userid
         else:
