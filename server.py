@@ -63,7 +63,7 @@ class OpenID(object):
                     "",                   # Six Pokemons
                     "",                   # Pokedex
                     0,                    # Number of Pokemons
-                    "0_1,3,2,3,3,3,9,3,13,3,19,3,22,3_23,3,6,3,15,3_4,3,7,3,16,3_1,6_0_0_0_0"   # Bag
+                    "0:1,3,2,3,3,3,9,3,13,3,19,3,22,3:23,3,6,3,15,3:4,3,7,3,16,3:1,6:0:0:0:0"   # Bag
                     ):
                 return userid
         else:
@@ -112,11 +112,11 @@ class OpenID(object):
 #       }
 #       
 #  AS:
-#       <bag>: <bagItems>_<bagMedicineStatus>_<bagMedicineHP>_<bagMedicinePP>
-#           _<bagPokeballs>_<bagTMsHMs>_<bagBerries>_<bagBattleItems>_<bagKeyItems>
+#       <bag>: <bagItems>:<bagMedicineStatus>:<bagMedicineHP>:<bagMedicinePP>
+#              :<bagPokeballs>:<bagTMsHMs>:<bagBerries>:<bagBattleItems>:<bagKeyItems>
 #     & <bagItems>, <...>: "1,2,3,..."
 #  SO:
-#       <bag>: "1,2,3_1,2,3_..._1,2,3"                                              
+#       <bag>: "1,2,3:1,2,3:...:1,2,3"                                              
 class User(object):
     def __init__(self, p_user_id):
         self.redis  = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
