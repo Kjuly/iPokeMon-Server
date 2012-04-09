@@ -54,7 +54,7 @@ class OpenID(object):
         # then add new user
         if self.redis.setnx("%s:%s" % (self.provider, md5(self.identity).hexdigest()), userid):
             self.redis.sadd("openid:%s" % userid, self.provider)
-            self.redis.setnx('u:%s:p'   % userid, 0) # UsersPokemonsID
+            #self.redis.setnx('u:%s:p'   % userid, 0) # UsersPokemonsID
             if User(userid).add(
                     "Trainer%s" % userid, # Name
                     time.time(),          # Time started
@@ -63,7 +63,7 @@ class OpenID(object):
                     "",                   # Six Pokemons
                     "0",                   # Pokedex
                     0,                    # Number of Pokemons
-                    "0:1,3,2,3,3,3,9,3,13,3,19,3,22,3:23,3,6,3,15,3:4,3,7,3,16,3:1,6:0:0:0:0"   # Bag
+                    "0:1,3,2,3,3,3,9,3,13,3,19,3,22,3:23,3,6,3,15,3:4,3,7,3,16,3:1,300:0:0:0:0"   # Bag
                     ):
                 return userid
         else:
@@ -220,32 +220,22 @@ class Pokemon(object):
 
     # Update one Pokemon data
     def update_one(self, p_pokemon_uid, p_pokemon_data):
-        if self.redis.sismember("pm:%s:%s" % (self.userid, p_pokemon_uid)):
+        if self.redis.sismember("pokedex:%s" % self.userid, p_pokemon_uid):
             self.redis.hmset(
-                    "pm:%s:%s" % (self.userid, pokemon_uid), # Hash Key
+                    "pm:%s:%s" % (self.userid, p_pokemon_uid), # Hash Key
                     p_pokemon_data                           # Mapping
-                    #"box",         p_pokemon_data['box'],
-                    #"status",      p_pokemon_data['status'],
-                    #"happiness",   p_pokemon_data['happiness'],
-                    #"level",       p_pokemon_data['level'],
-                    #"fourMoves",   p_pokemon_data['fourMoves'],
-                    #"maxStats",    p_pokemon_data['maxStats'],
-                    #"currHP",      p_pokemon_data['currHP'],
-                    #"p_currEXP",   p_pokemon_data['currEXP'],
-                    #"toNextLevel", p_pokemon_data['toNextLevel'],
-                    #"memo",        p_pokemon_data['memo']
                     )
-            return True
         else:
-            return False
+            self.add(p_pokemon_uid, p_pokemon_data)
+        return True
 
 
     # Add new tamed Pokemon
-    def add(self, p_pokemon_data):
-        if self.redis.sadd("pokedex:%s" % self.userid, p_pokemon_data["uid"]):
+    def add(self, p_pokemon_uid, p_pokemon_data):
+        if self.redis.sadd("pokedex:%s" % self.userid, p_pokemon_uid):
             #pokemon_uid = self.redis.incr("u:%s" % self.userid, "pokemons")
-            pokemon_uid = self.redis.incr("u:%s:p" % self.userid)
-            self.redis.hmset("pm:%s:%s" % (self.userid, pokemon_uid), p_pokemon_data)
+            #pokemon_uid = self.redis.incr("u:%s:p" % self.userid)
+            self.redis.hmset("pm:%s:%s" % (self.userid, p_pokemon_uid), p_pokemon_data)
             return True
         else:
             return False
@@ -288,6 +278,7 @@ def debug():
         sixpokemons = pokemon.get_six()
         if type(sixpokemons) is list:
             for p in sixpokemons:
+                print(p)
                 chart = '<tr>#UID:'        + str(p['uid'])         + ' </tr>' \
                         '<tr>_SID:'        + str(p['sid'])         + ' </tr>' \
                         '<tr>_box:'        + str(p['box'])         + ' </tr>' \
@@ -297,8 +288,8 @@ def debug():
                         '<tr>_level:'      + str(p['level'])       + ' </tr>' \
                         '<tr>_fourMoves:'  + p['fourMoves']        + ' </tr>' \
                         '<tr>_maxStats:'   + p['maxStats']         + ' </tr>' \
-                        '<tr>_currHP:'     + str(p['currHP'])      + ' </tr>' \
-                        '<tr>_currEXP:'    + str(p['currEXP'])     + ' </tr>' \
+                        '<tr>_HP:'         + str(p['hp'])          + ' </tr>' \
+                        '<tr>_EXP:'        + str(p['exp'])         + ' </tr>' \
                         '<tr>toNextLevel:' + str(p['toNextLevel']) + ' </tr>' \
                         '<tr>memo:'        + p['memo']             + ' </tr>' \
                         '</br>'
@@ -318,8 +309,8 @@ def debug():
                         '<tr>_level:'      + str(p['level'])       + ' </tr>' \
                         '<tr>_fourMoves:'  + p['fourMoves']        + ' </tr>' \
                         '<tr>_maxStats:'   + p['maxStats']         + ' </tr>' \
-                        '<tr>_currHP:'     + str(p['currHP'])      + ' </tr>' \
-                        '<tr>_currEXP:'    + str(p['currEXP'])     + ' </tr>' \
+                        '<tr>_HP:'         + str(p['hp'])          + ' </tr>' \
+                        '<tr>_EXP:'        + str(p['exp'])         + ' </tr>' \
                         '<tr>toNextLevel:' + str(p['toNextLevel']) + ' </tr>' \
                         '<tr>memo:'        + p['memo']             + ' </tr>' \
                         '</br>'
@@ -444,7 +435,7 @@ def user_pokedex():
         return False
     openID = OpenID(header.get_provider(), header.get_identity())
     if openID.authenticate():
-        return {"pokedex":Pokemon(openID.authorized_user()).get_all()}
+        return {"pd":Pokemon(openID.authorized_user()).get_all()}
 
 # User - POST Pokemon
 # upm: Update PokeMon
@@ -459,7 +450,7 @@ def user_pokemon():
         pokemon_data = {}
         for key in data.keys():
             pokemon_data[key] = data.get(key)
-        Pokemon(openID.authorized_user()).add(pokemon_data)
+        Pokemon(openID.authorized_user()).update_one(pokemon_data["uid"], pokemon_data)
     else:
         return False
 
