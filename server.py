@@ -465,21 +465,27 @@ def pokemon_area(id):
 
 # Region - Wild Pokemons
 # wpm: Wild PokeMon
-@server.route('/wpm')
+@server.get('/wpm')
 def user_pokedex():
     header = Header(request.headers)
-    region = header.get_region()
-    pokedex = { 'wildpokemons' : [
-        {'uid':1, 'sid':1, 'level':10},
-        {'uid':2, 'sid':2, 'level':10},
-        {'uid':3, 'sid':3, 'level':10},
-        {'uid':4, 'sid':4, 'level':10},
-        {'uid':5, 'sid':5, 'level':10},
-        {'uid':6, 'sid':6, 'level':10},
-        {'uid':7, 'sid':7, 'level':10},
-        {'uid':8, 'sid':8, 'level':10},
-        {'uid':9, 'sid':9, 'level':10},
-        {'uid':10, 'sid':10, 'level':10}]}
+    if not header.auth():
+        return {}
+    openID = OpenID(header.get_provider(), header.get_identity())
+    if openID.authenticate():
+        region = request.params.get("t") # t:Type
+    # wpms:Wild PokeMonS
+    # id:SID, lv:Level
+    pokedex = { 'wpms' : [
+        {'id':1, 'lv':10},
+        {'id':2, 'lv':10},
+        {'id':3, 'lv':10},
+        {'id':4, 'lv':10},
+        {'id':5, 'lv':10},
+        {'id':6, 'lv':10},
+        {'id':7, 'lv':10},
+        {'id':8, 'lv':10},
+        {'id':9, 'lv':10},
+        {'id':10, 'lv':10}]}
     return pokedex
 
 
