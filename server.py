@@ -464,6 +464,18 @@ def pokemon_area(id):
     pass
 
 # Region - Wild Pokemons
+# Pokemon's 9 Habitat types' related SIDs
+k_habitat = [
+        "51,92,42,94,50,93,41,95",
+        "46,70,13,10,18,26,48,16,69,47,71,14,11,127,102,12,17,25,103,49,15",
+        "2,58,123,20,37,83,44,125,33,85,78,128,31,96,115,40,24,59,38,45,1,29,84,19,43,32,34,108,77,30,97,114,39,3,23",
+        "105,68,56,35,74,76,104,67,5,142,126,57,36,75,4,6,143,66",
+        "144,145,151,146,150",
+        "21,111,28,81,112,82,22,27",
+        "90,139,117,87,73,120,140,91,86,116,131,121,141,138,72",
+        "133,63,107,135,101,110,122,52,137,89,132,109,64,106,65,124,113,53,136,134,88,100",
+        "9,80,119,147,54,61,130,149,98,7,148,79,118,55,62,129,8,99,6"
+        ]
 # wpm: Wild PokeMon
 @server.get('/wpm')
 def user_pokedex():
@@ -471,22 +483,13 @@ def user_pokedex():
     if not header.auth():
         return {}
     openID = OpenID(header.get_provider(), header.get_identity())
-    if openID.authenticate():
-        region = request.params.get("t") # t:Type
-    # wpms:Wild PokeMonS
-    # id:SID, lv:Level
-    pokedex = { 'wpms' : [
-        {'id':1, 'lv':10},
-        {'id':2, 'lv':10},
-        {'id':3, 'lv':10},
-        {'id':4, 'lv':10},
-        {'id':5, 'lv':10},
-        {'id':6, 'lv':10},
-        {'id':7, 'lv':10},
-        {'id':8, 'lv':10},
-        {'id':9, 'lv':10},
-        {'id':10, 'lv':10}]}
-    return pokedex
+    if not openID.authenticate():
+        return {}
+    habitat_type = request.params.get("t") # t:Type
+    if not habitat_type:
+        return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
+    # wpm:Wild PokeMon
+    return {"wpm":k_habitat[int(habitat_type) - 1]}
 
 
 #
