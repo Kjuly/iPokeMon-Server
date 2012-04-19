@@ -318,6 +318,15 @@ def debug():
     output += '</html>'
     return output
 
+# Connection checking - GET feedback
+# uu: Update User
+@server.get('/cc')
+def check_connection():
+    header = Header(request.headers)
+    if not header.auth():
+        return False
+    return {'v':1}
+
 #
 # User Section
 #
