@@ -278,7 +278,6 @@ def debug():
         sixpokemons = pokemon.get_six()
         if type(sixpokemons) is list:
             for p in sixpokemons:
-                print(p)
                 chart = '<tr>#UID:'        + str(p['uid'])         + ' </tr>' \
                         '<tr>_SID:'        + str(p['sid'])         + ' </tr>' \
                         '<tr>_box:'        + str(p['box'])         + ' </tr>' \
