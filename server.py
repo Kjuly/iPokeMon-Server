@@ -127,8 +127,21 @@ class User(object):
         #return self.redis.hget("u:%s" % userid, "name")
         return self.redis.hgetall("u:%s" % self.userid)
 
+    # If unique, return True
     def check_name_uniqueness(self, p_username):
-        return self.redis.sismember("usernames",p_username)
+        p_username = (p_username).lower()
+        # if name exists, check whether it is belong to current user
+        if self.redis.sismember("usernames", p_username):
+            # if this name belong to current user, treat it as unique
+            username = self.redis.hget("u:%s" % self.userid, "name")
+            if (username).lower() == p_username:
+                return True
+            # otherwise, name is not unique
+            else:
+                return False
+        # not exists, this name is unique, return True
+        else:
+            return True
 
     # Update data for user
     def update(self, p_userdata):
@@ -145,7 +158,7 @@ class User(object):
             p_sixPokemons, p_pokedex, p_pokemons, p_bag):
         # If add user successed, i.e. <userid> does not exist in <users> set
         if self.redis.sadd("users", self.userid):
-            self.redis.sadd("usernames", p_username)
+            self.redis.sadd("usernames", (p_username).lower())
             #self.redis.hset("u:%s" % self.userid, "name",    p_username)
             #self.redis.hset("u:%s" % self.userid, "pokedex", p_pokedex)
             self.redis.hmset("u:%s" % self.userid, {
@@ -386,9 +399,9 @@ def get_user():
     if userid:
         # If ture, means exist, return 0
         if User(userid).check_name_uniqueness(request.params.get("name")):
-            uniqueness = 0
-        else:
             uniqueness = 1
+        else:
+            uniqueness = 0
     else:
         uniqueness = -1
     return {'u':uniqueness}
