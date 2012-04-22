@@ -331,7 +331,7 @@ def debug():
     return output
 
 # Connection checking - GET feedback
-# uu: Update User
+# cc: Check Connection from client to server
 @server.get('/cc')
 def check_connection():
     header = Header(request.headers)
