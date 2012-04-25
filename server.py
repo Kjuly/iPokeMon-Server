@@ -15,7 +15,7 @@ class Header(object):
 
     # Make sure the request is sent via App
     def auth(self):
-        if self.headers.get('key') == '123456':
+        if self.headers.get('key') == 'iPokemonClient':
             return True
         else:
             return False
