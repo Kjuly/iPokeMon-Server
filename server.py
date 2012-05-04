@@ -262,19 +262,36 @@ class WildPokemon(object):
         self.li    = p_li
 
     # Most Widely Distributed PMs Class
-    # country: country code.
     # e.g. CN -> China, US -> United Stats
+    # code_co: code country
     def get_mwd(self):
-        CODE = self.li.get('country_code')
+        CODE = self.li.get('code_co')
         if CODE:
             KEY = '%s:mwd' % CODE
             if self.redis.exists(KEY):
                 return self.redis.get(KEY)
             else:
                 return self.redis.get('DEFAULT:mwd')
-            CODE = None
         else:
             return ''
+
+    # Distributed In Provinces (administrative area)
+    # e.g. ZJ -> Zhejiang Province, CA -> California
+    # code_aa: code administrative area
+    def get_for_administrative_area(self):
+        CODE = self.li.get('code_aa')
+        if CODE:
+            KEY = '%s:mwd' % CODE
+            if self.redis.exists(KEY):
+                return self.redis.get(KEY)
+            else:
+                return self.redis.get('DEFAULT:mwd')
+        else:
+            return ''
+
+    # collect location info for all the world
+    def collect_location_info(self):
+        pass
 
 
 #
