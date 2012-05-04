@@ -547,7 +547,7 @@ def user_pokedex():
     #habitat_type = request.params.get("t") # t:Type
     SIDs = []
     SIDs.append(wpm.get_mwd())
-    return {'wpm':''.join(SIDs)}
+    return {'wpm':','.join(SIDs)}
     #if not habitat_type:
     #    return {"wpm":self.redis.get(str(KEY)[:-1])}
         #return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
