@@ -522,7 +522,8 @@ def user_pokedex():
         return {}
     habitat_type = request.params.get("t") # t:Type
     if not habitat_type:
-        return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
+        return {"wpm":"10,13,16,19,21,23,29,32,43,46,69"}
+        #return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
     # wpm:Wild PokeMon
     return {"wpm":k_habitat[int(habitat_type) - 1]}
 
