@@ -486,6 +486,20 @@ def pokemon_area(id):
 
 # Region - Wild Pokemons
 # Pokemon's 9 Habitat types' related SIDs
+"""
+# Pokemon Habitat
+typedef enum {
+  kPokemonHabitatCave         = 1,
+  kPokemonHabitatForest       = 2,
+  kPokemonHabitatGrassland    = 3,
+  kPokemonHabitatMountain     = 4,
+  kPokemonHabitatRare         = 5, // Mean "Unknow"
+  kPokemonHabitatRoughTerrain = 6,
+  kPokemonHabitatSea          = 7,
+  kPokemonHabitatUrban        = 8,
+  kPokemonHabitatWatersEdge   = 9
+}PokemonHabitat;
+"""
 k_habitat = [
         "51,92,42,94,50,93,41,95",
         "46,70,13,10,18,26,48,16,69,47,71,14,11,127,102,12,17,25,103,49,15",
