@@ -52,8 +52,8 @@ class WPM(object):
 def run_queue():
     # Most Widely Distributed
     wpm = WPM()
-    wpm.output_wmd()  # output 
-    #wpm.update_wmd() # update
+    #wpm.output_wmd()  # output 
+    wpm.update_wmd() # update
     #wpm.rm_wmd()     # remove
 
 if __name__ == '__main__':

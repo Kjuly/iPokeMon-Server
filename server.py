@@ -254,6 +254,29 @@ class Pokemon(object):
             return False
 
 
+# Wild Pokemon
+class WildPokemon(object):
+    # li: Location Info
+    def __init__(self, p_li):
+        self.redis = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
+        self.li    = p_li
+
+    # Most Widely Distributed PMs Class
+    # country: country code.
+    # e.g. CN -> China, US -> United Stats
+    def get_mwd(self):
+        CODE = self.li.get('country_code')
+        if CODE:
+            KEY = '%s:mwd' % CODE
+            if self.redis.exists(KEY):
+                return self.redis.get(KEY)
+            else:
+                return self.redis.get('DEFAULT:mwd')
+            CODE = None
+        else:
+            return ''
+
+
 #
 # RESTs
 #
@@ -520,12 +543,16 @@ def user_pokedex():
     openID = OpenID(header.get_provider(), header.get_identity())
     if not openID.authenticate():
         return {}
-    habitat_type = request.params.get("t") # t:Type
-    if not habitat_type:
-        return {"wpm":"10,13,16,19,21,23,29,32,43,46,69"}
+    wpm = WildPokemon(request.params)
+    #habitat_type = request.params.get("t") # t:Type
+    SIDs = []
+    SIDs.append(wpm.get_mwd())
+    return {'wpm':''.join(SIDs)}
+    #if not habitat_type:
+    #    return {"wpm":self.redis.get(str(KEY)[:-1])}
         #return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
     # wpm:Wild PokeMon
-    return {"wpm":k_habitat[int(habitat_type) - 1]}
+    #return {"wpm":k_habitat[int(habitat_type) - 1]}
 
 
 #
