@@ -292,9 +292,9 @@ class Region(object):
         #
         # will not add same data
         #
-        # p_li e.g.: 'cc:CN=ca:Zhejaing Province=cl:Hangzhou City'
-        # p_li[3:5] = 'CN'
-        if self.redis.sadd("re:%s" % p_li[3:5], p_li):
+        # p_li e.g.: 'CN=Zhejaing Province=Hangzhou City'
+        # p_li[:2] = 'CN'
+        if self.redis.sadd("re:%s" % p_li[:2], p_li):
             print('-1- add new Region Info - %s' % p_li)
         else:
             print('-0- cannot add new Region Info - %s' % p_li)
