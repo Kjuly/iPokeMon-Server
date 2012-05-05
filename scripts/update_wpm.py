@@ -17,9 +17,9 @@ REDIS_DB   = 8
 
 # Most Widely Distributed PMs Data File Name
 BASE_FOLDER = './data/'
-MWD_OUTPUT  = BASE_FOLDER + 'wpm_mwd_output'
-MWD_UPDATE  = BASE_FOLDER + 'wpm_mwd_update'
-MWD_RM      = BASE_FOLDER + 'wpm_mwd_rm'
+MWD_OUTPUT  = BASE_FOLDER + 'wpm_output'
+MWD_UPDATE  = BASE_FOLDER + 'wpm_update'
+MWD_RM      = BASE_FOLDER + 'wpm_remove'
 
 # Most Widely Distributed PMs Class
 class WPM(object):
@@ -27,7 +27,7 @@ class WPM(object):
         self.redis = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
 
     # do nothing, just output
-    def output_wmd(self):
+    def output(self):
         with open(MWD_OUTPUT) as f:
             for KEY in f:
                 print('%s | %s' % (str(KEY)[:-1], self.redis.get(str(KEY)[:-1])))
@@ -35,14 +35,14 @@ class WPM(object):
     # update the most widely distributed PMs
     # mwd: Most Widely Distributed
     # <country_code>:mwd
-    def update_wmd(self):
+    def update(self):
         with open(MWD_UPDATE) as f:
             for KEY, VALUE in itertools.izip_longest(*[f] * 2):
                 self.redis.set(str(KEY)[:-1], str(VALUE)[:-1])
                 print('ADD: %s | %s' % (str(KEY)[:-1], self.redis.get(str(KEY)[:-1])))
 
     # remove
-    def rm_wmd(self):
+    def remove(self):
         with open(MWD_RM) as f:
             for KEY in f:
                 self.redis.delete(str(KEY)[:-1])
@@ -52,9 +52,9 @@ class WPM(object):
 def run_queue():
     # Most Widely Distributed
     wpm = WPM()
-    #wpm.output_wmd()  # output 
-    wpm.update_wmd() # update
-    #wpm.rm_wmd()     # remove
+    #wpm.output()
+    wpm.update()
+    #wpm.remove()
 
 if __name__ == '__main__':
     run_queue()
