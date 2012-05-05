@@ -28,10 +28,6 @@ class Header(object):
     def get_identity(self):
         return self.headers.get('identity')
 
-    # Get <region>
-    def get_region(self):
-        return self.headers.get('region')
-
 
 # <xxx>  : Basic
 # <!xxx!>: Encrypted
@@ -242,7 +238,6 @@ class Pokemon(object):
             self.add(p_pokemon_uid, p_pokemon_data)
         return True
 
-
     # Add new tamed Pokemon
     def add(self, p_pokemon_uid, p_pokemon_data):
         if self.redis.sadd("pokedex:%s" % self.userid, p_pokemon_uid):
@@ -252,6 +247,51 @@ class Pokemon(object):
             return True
         else:
             return False
+
+# Region
+class Region(object):
+    def __init__(self):
+        self.redis = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
+
+    # get current region
+    #
+    # <code> = <cc>:<ca>:<cl>
+    #   <cc>: code country
+    #   <ca>: code administrative area
+    #   <cl>: code locality
+    # 
+    # key e.g.: 're:CN:ZJ:HZ' ###'re:CN:ZJ:HZ:XX' next version
+    #
+    # return value e.g.:
+    #   {
+    #     'c'  : 'CN:ZJ:HZ:XX:XX',
+    #     'cc' : 'CN',
+    #     'ca' : 'Zhejiang Province',
+    #     'cl' : 'Hangzhou City',
+    #     'csl': '' ### wait to be added in next version
+    #   }
+    def get_with(self, p_code):
+        return self.redis.hgetall("re:%s" % p_code)
+
+    # add new region info
+    # wait admin to modify & add to db
+    #
+    # key e.g.: 're:CN'
+    #
+    # values e.g.:
+    #   (
+    #     {c:'', cc:'CN', ca:'Zhejiang Province', cl:'Hangzhou City', ###csl:'...'}
+    #     .
+    #     .
+    #     .
+    #   )
+    def add_new(self, p_region_dict):
+        # cc: code country
+        # re:<p_region_dict['cc']> => e.g. 're:CN'
+        if self.redis.sadd("re:%s", p_region_dict['cc']):
+            print('...Added new Region Info...%s' % p_region_dict)
+        else:
+            print('...Add new Region FAILED..%s' % p_region_dict)
 
 
 # Wild Pokemon
@@ -546,16 +586,43 @@ def user_pokemon():
     else:
         return False
 
+#
+# Region Section
+#
+# Region - GET regions for user's current location
+# r:Region
+# <code>=<cc>:<ca>:<cl> e.g. 'CN:ZJ:HZ'
+#  ### next version: <cc>:<ca>:<cl>:<csl>
+#
+# <cc>:  code country
+# <ca>:  code administrative area
+# <cl>:  code locality
+# ###<csl>: code sub-locality
+@server.get('/r/<code>')
+def get_region(code):
+    # just auth whether it is sent from App Client
+    #   no need to auth the user
+    if not Header(request.headers).auth():
+        return False
+    return {"r":Region().get_with(code)}
+
+# Region - POST update new regions
+# ur:Update Region
+@server.post('/ur')
+def update_region():
+    if not Header(request.headers).auth():
+        return False
+    data = request.params
+    region_dict = {}
+    for key in data.keys():
+        region_dict[key] = data.get(key)
+    print('-'*10)
+    print(region_dict)
+    Region().add_new(region_dict)
 
 #
-# Pokemon Section
+# Wild Pokemon Section
 #
-# Pokemon - Area
-@server.route('/pokemon/<id:int>/area')
-def pokemon_area(id):
-    pass
-
-# Region - Wild Pokemons
 # Pokemon's 9 Habitat types' related SIDs
 """
 # Pokemon Habitat
