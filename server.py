@@ -256,38 +256,54 @@ class Pokemon(object):
 
 # Wild Pokemon
 class WildPokemon(object):
-    # li: Location Info
-    def __init__(self, p_li):
+    def __init__(self):
         self.redis = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
-        self.li    = p_li
 
-    # Most Widely Distributed PMs Class
-    # e.g. CN -> China, US -> United Stats
-    # code_co: code country
-    def get_mwd(self):
-        CODE = self.li.get('code_co')
-        if CODE:
-            KEY = '%s:mwd' % CODE
-            if self.redis.exists(KEY):
-                return self.redis.get(KEY)
+    # args:
+    #   p_rps: request.params
+    #
+    # tails: [
+    #   CN,         # country code
+    #   CN:ZJ,      # administrative area
+    #   CN:ZJ:HZ,   # city (locality)
+    #   CN:ZJ:HZ:X, # special points in city
+    #   ...
+    #   ]
+    def get_SIDs(self, p_rps):
+        SIDs = []
+        for tail in self.generate_tails(p_rps):
+            key = 'wpm:%s' % tail
+            if self.redis.exists(key):
+                SIDs.append(self.redis.get(key))
             else:
-                return self.redis.get('DEFAULT:mwd')
-        else:
-            return ''
+                SIDs.append(self.redis.get('wpm:DEFAULT'))
+        return ','.join(SIDs)
 
-    # Distributed In Provinces (administrative area)
-    # e.g. ZJ -> Zhejiang Province, CA -> California
-    # code_aa: code administrative area
-    def get_for_administrative_area(self):
-        CODE = self.li.get('code_aa')
-        if CODE:
-            KEY = '%s:mwd' % CODE
-            if self.redis.exists(KEY):
-                return self.redis.get(KEY)
-            else:
-                return self.redis.get('DEFAULT:mwd')
-        else:
-            return ''
+    # filter request params, generate |tails|, which will used in |get_SIDs()|
+    # rps: request params
+    def generate_tails(self, p_rps):
+        tails = []
+        codes = p_rps.get('code').split(':') # value e.g.: 'CN:ZJ:HZ:X'
+        print('CODES:%s' % codes)
+        if not codes:
+            return
+        # init |tails| with |codes[0]|
+        # so, |tails[0] == codes[0]|, e.g. 'CN'
+        tails.append(codes[0])
+        i = 0
+        codes_length = len(codes)
+        while True:
+            i += 1
+            if i >= codes_length:
+                break
+            # add new value to |tails|
+            # e.g. 
+            #   tails[1] = CN:ZJ
+            #   codes[2] = HZ
+            #   new_value = CN:ZJ:HZ
+            tails.append('%s:%s' % (tails[i-1], codes[i]))
+        print('TAILS:%s', tails)
+        return tails
 
     # collect location info for all the world
     def collect_location_info(self):
@@ -560,11 +576,7 @@ def user_pokedex():
     openID = OpenID(header.get_provider(), header.get_identity())
     if not openID.authenticate():
         return {}
-    wpm = WildPokemon(request.params)
-    #habitat_type = request.params.get("t") # t:Type
-    SIDs = []
-    SIDs.append(wpm.get_mwd())
-    return {'wpm':','.join(SIDs)}
+    return {'wpm':WildPokemon().get_SIDs(request.params)}
     #if not habitat_type:
     #    return {"wpm":self.redis.get(str(KEY)[:-1])}
         #return {"wpm":"1,2,3,4,5,6,7,8,9,10,11,12"}
