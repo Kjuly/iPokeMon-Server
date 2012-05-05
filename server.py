@@ -281,9 +281,28 @@ class WildPokemon(object):
 
     # filter request params, generate |tails|, which will used in |get_SIDs()|
     # rps: request params
+    #
+    # |codes| value format: [<0>,<1>,<2>,<3>,<4>]
+    #   <0>=<country>:                      China (CN)
+    #   <1>=<administrativeArea(province)>: Zhejiang Province (ZJ)
+    #   <2>=<locality(city)>:               Hangzhou City (HZ)
+    #   <3>=<sublocality(district)>:        (Space Holder) Yuhang District (YH)
+    #   <4>=<special>:                      water, cave
+    # |codes| value e.g.:
+    #   ['CN', 'ZJ', 'HZ', 'XX', 'XX']
+    #
+    # |tails| value format: [<0>,<1>,<2>,<3>,<4>]
+    #   <0>=codes[0]
+    #   <1>=codes[0]:codes[1]
+    #   <2>=codes[0]:codes[1]:codes[2]
+    #   <3>=codes[0]:codes[1]:codes[2]:codes[3]
+    #   <4>=codes[0]:codes[1]:codes[2]:codes[3]:codes[4]
+    # |tails| value e.g.:
+    #   ['CN', 'CN:ZJ', 'CN:ZJ:HZ', 'CN:ZJ:HZ:XX', 'CN:ZJ:HZ:XX:X']
+    #
     def generate_tails(self, p_rps):
         tails = []
-        codes = p_rps.get('code').split(':') # value e.g.: 'CN:ZJ:HZ:X'
+        codes = p_rps.get('code').split(':')
         print('CODES:%s' % codes)
         if not codes:
             return
@@ -297,10 +316,6 @@ class WildPokemon(object):
             if i >= codes_length:
                 break
             # add new value to |tails|
-            # e.g. 
-            #   tails[1] = CN:ZJ
-            #   codes[2] = HZ
-            #   new_value = CN:ZJ:HZ
             tails.append('%s:%s' % (tails[i-1], codes[i]))
         print('TAILS:%s', tails)
         return tails
