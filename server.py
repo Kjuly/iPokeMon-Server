@@ -285,13 +285,19 @@ class Region(object):
     #     .
     #     .
     #   )
-    def add_new(self, p_region_dict):
+    # li: location info
+    def add_new(self, p_li):
         # cc: code country
         # re:<p_region_dict['cc']> => e.g. 're:CN'
-        if self.redis.sadd("re:%s", p_region_dict['cc']):
-            print('...Added new Region Info...%s' % p_region_dict)
+        #
+        # will not add same data
+        #
+        # p_li e.g.: 'cc:CN=ca:Zhejaing Province=cl:Hangzhou City'
+        # p_li[3:5] = 'CN'
+        if self.redis.sadd("re:%s" % p_li[3:5], p_li):
+            print('-1- add new Region Info - %s' % p_li)
         else:
-            print('...Add new Region FAILED..%s' % p_region_dict)
+            print('-0- cannot add new Region Info - %s' % p_li)
 
 
 # Wild Pokemon
@@ -612,13 +618,13 @@ def get_region(code):
 def update_region():
     if not Header(request.headers).auth():
         return False
-    data = request.params
-    region_dict = {}
-    for key in data.keys():
-        region_dict[key] = data.get(key)
-    print('-'*10)
-    print(region_dict)
-    Region().add_new(region_dict)
+    #data = request.params
+    #region_dict = {}
+    #for key in data.keys():
+    #    region_dict[key] = data.get(key)
+    #print('-'*10)
+    #print(region_dict)
+    Region().add_new(request.params.get('li'))
 
 #
 # Wild Pokemon Section
