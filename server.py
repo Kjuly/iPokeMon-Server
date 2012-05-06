@@ -281,7 +281,7 @@ class Region(object):
     # wait admin to modify & add to db
     #
     # API: /ur
-    # p_li: location info
+    # p_ri: region info
     #
     # key e.g.: 're:CN'
     #
@@ -291,13 +291,13 @@ class Region(object):
     #     "CN=Zhejiang Province=Ningbo City",
     #     .
     #   )
-    def add_new(self, p_li):
-        # p_li[:2] = 'CN'
-        # p_li e.g.: 'CN=Zhejaing Province=Hangzhou City'
-        if self.redis.sadd("re:%s" % p_li[:2], p_li):
-            print('-1- add new Region Info - %s' % p_li)
+    def add_new(self, p_ri):
+        # p_ri[:2] = 'CN'
+        # p_ri e.g.: 'CN=Zhejaing Province=Hangzhou City'
+        if self.redis.sadd("re:%s" % p_ri[:2], p_ri):
+            print('-1- add new Region Info - %s' % p_ri)
         else:
-            print('-0- cannot add new Region Info - %s' % p_li)
+            print('-0- cannot add new Region Info - %s' % p_ri)
 
 
 # Wild Pokemon
@@ -618,10 +618,10 @@ def get_region(code):
 def update_region():
     if not Header(request.headers).auth():
         return False
-    # li: location info
+    # ri: region info
     # e.g. 'CN:ZJ:HZ'
-    li = request.params.get('li')
-    if li: Region().add_new(li)
+    ri = request.params.get('ri')
+    if ri: Region().add_new(ri)
 
 #
 # Wild Pokemon Section
