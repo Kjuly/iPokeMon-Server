@@ -26,13 +26,15 @@ MWD_UPDATE  = BASE_FOLDER + 'wpm_update'
 MWD_RM      = BASE_FOLDER + 'wpm_remove'
 
 # Region
+# re: is for real region DB
+# nre: is for new region set that wait to be modified
 class Region(object):
     def __init__(self):
         self.redis = redis.Redis(RADIS_HOST, REDIS_PORT, REDIS_DB)
 
     # get new regions' set
     def get_new_set(self, p_code_country):
-        key = "re:%s" % p_code_country
+        key = "nre:%s" % p_code_country
         if not self.redis.exists(key):
             print('-0- KEY NOT EXISTS')
             return
@@ -66,7 +68,7 @@ class Region(object):
 
     # clean new region set
     def clean_set(self, p_code_country):
-        key = "re:%s" % p_code_country
+        key = "nre:%s" % p_code_country
         if not self.redis.exists(key):
             print('-0- KEY NOT EXISTS')
         if self.redis.delete(key):

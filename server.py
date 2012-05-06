@@ -283,7 +283,7 @@ class Region(object):
     # API: /ur
     # p_ri: region info
     #
-    # key e.g.: 're:CN'
+    # key e.g.: 'nre:CN'
     #
     # values e.g.:
     #   (
@@ -294,7 +294,7 @@ class Region(object):
     def add_new(self, p_ri):
         # p_ri[:2] = 'CN'
         # p_ri e.g.: 'CN=Zhejaing Province=Hangzhou City'
-        if self.redis.sadd("re:%s" % p_ri[:2], p_ri):
+        if self.redis.sadd("nre:%s" % p_ri[:2], p_ri):
             print('-1- add new Region Info - %s' % p_ri)
         else:
             print('-0- cannot add new Region Info - %s' % p_ri)
