@@ -105,8 +105,8 @@ class WPM(object):
 def run_queue():
     # Region
     re = Region()
-    #re.get_new_set('CN') # get new region set from DB
-    #re.add_regions()     # add modified (|code|) region data to DB
+    re.get_new_set('CN') # get new region set from DB
+    #re.add_regions()     # add modified (|code|) region data to DB, it'll overwrite original key-value pair
     #re.clean_set('CN')   # clean new region set in DB
 
     '''

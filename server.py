@@ -255,45 +255,45 @@ class Region(object):
 
     # get current region
     #
-    # <code> = <cc>:<ca>:<cl>
-    #   <cc>: code country
-    #   <ca>: code administrative area
-    #   <cl>: code locality
+    # API: /r
+    # P_code: code for key
+    #
+    # <code> format = <cc>:<ca>:<cl>
+    #   <cc> : code country
+    #   <ca> : code administrative area
+    #   <cl> : code locality 
+    # ##<csl>: code sub-locality next version##
+    #
+    # e.g.
+    #   "CN:ZJ:HZ"
     # 
-    # key e.g.: 're:CN:ZJ:HZ' ###'re:CN:ZJ:HZ:XX' next version
+    # key format = re:<code> e.g.:
+    #   "re:CN:ZJ:HZ"
+    # if key not exists, return NULL
     #
     # return value e.g.:
-    #   {
-    #     'c'  : 'CN:ZJ:HZ:XX:XX',
-    #     'cc' : 'CN',
-    #     'ca' : 'Zhejiang Province',
-    #     'cl' : 'Hangzhou City',
-    #     'csl': '' ### wait to be added in next version
-    #   }
+    #   "CN:ZJ:HZ=Zhejiang Province=Hangzhou City"
+    #   
     def get_with(self, p_code):
-        return self.redis.hgetall("re:%s" % p_code)
+        return self.redis.get("re:%s" % p_code)
 
-    # add new region info
+    # add new region info (will not add same data)
     # wait admin to modify & add to db
+    #
+    # API: /ur
+    # p_li: location info
     #
     # key e.g.: 're:CN'
     #
     # values e.g.:
     #   (
-    #     {c:'', cc:'CN', ca:'Zhejiang Province', cl:'Hangzhou City', ###csl:'...'}
-    #     .
-    #     .
+    #     "CN=Zhejiang Province=Hangzhou City", ###=<csl>
+    #     "CN=Zhejiang Province=Ningbo City",
     #     .
     #   )
-    # li: location info
     def add_new(self, p_li):
-        # cc: code country
-        # re:<p_region_dict['cc']> => e.g. 're:CN'
-        #
-        # will not add same data
-        #
-        # p_li e.g.: 'CN=Zhejaing Province=Hangzhou City'
         # p_li[:2] = 'CN'
+        # p_li e.g.: 'CN=Zhejaing Province=Hangzhou City'
         if self.redis.sadd("re:%s" % p_li[:2], p_li):
             print('-1- add new Region Info - %s' % p_li)
         else:
@@ -618,13 +618,10 @@ def get_region(code):
 def update_region():
     if not Header(request.headers).auth():
         return False
-    #data = request.params
-    #region_dict = {}
-    #for key in data.keys():
-    #    region_dict[key] = data.get(key)
-    #print('-'*10)
-    #print(region_dict)
-    Region().add_new(request.params.get('li'))
+    # li: location info
+    # e.g. 'CN:ZJ:HZ'
+    li = request.params.get('li')
+    if li: Region().add_new(li)
 
 #
 # Wild Pokemon Section
