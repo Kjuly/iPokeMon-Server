@@ -678,6 +678,84 @@ def user_pokedex():
     # wpm:Wild PokeMon
     #return {"wpm":k_habitat[int(habitat_type) - 1]}
 
+#
+# Map Annotations
+#
+# mas: Map AnnotationS
+# GET
+@server.get('/mas/<code>')
+def get_annotations(code):
+    header = Header(request.headers)
+    if not header.auth():
+        return {}
+    openID = OpenID(header.get_provider(), header.get_identity())
+    if not openID.authenticate():
+        return {}
+    # mas: Map AnnotationS
+    # l: Level
+    # as: AnotationS
+    return {"mas":[
+        {
+            'l':'1=2',
+            'as' : [
+                "CN=39.9333=116.2830=Beijing=Beijing"
+                ]
+            },
+        {
+            'l':'3=5',
+            'as':[
+                "CNAH=31.8867=117.2330=Anhui=Anhui",
+                "CNBJ=39.9333=116.2830=Beijing=Beijing",
+                "CNCQ=29.5167=106.4830=Chongqing=Chongqing",
+                "CNFJ=26.0833=119.2830=Fujian=Fujian",
+                "CNGS=36.0167=103.7500=Gansu=Gansu",
+                "CNGD=23.1667=113.3330=Guangdong=Guangdong",
+                "CNGX=22.8167=108.3500=Guangxi=Guangxi",
+                "CNGZ=26.5833=106.7170=Guizhou=Guizhou",
+                "CNHI=20.0333=110.3500=Hainan=Hainan",
+                "CNHE=38.0500=114.4670=Hebei=Hebei",
+                "CNHL=47.7500=126.6830=Heilongjiang=Heilongjiang",
+                "CNHA=34.7167=113.6500=Henan=Henan",
+                "CNHB=30.6167=114.1330=Hubei=Hubei",
+                "CNHN=28.2000=113.0830=Hunan=Hunan",
+                "CNJS=32.0000=118.8000=Jiangsu=Jiangsu",
+                "CNJX=28.6000=115.9170=Jiangxi=Jiangxi",
+                "CNJL=43.8500=126.5500=Jilin=Jilin",
+                "CNLN=41.8000=123.4000=Liaoning=Liaoning",
+                "CNNM=40.8167=111.6830=Nei Mongol=Nei Mongol",
+                "CNNX=38.4833=106.2170=Ningxia=Ningxia",
+                "CNQH=36.6167=101.7670=Qinghai=Qinghai",
+                "CNSN=34.3000=108.9330=Shaanxi=Shaanxi",
+                "CNSD=36.6833=116.9830=Shandong=Shandong",
+                "CNSH=31.2333=121.4670=Shanghai=Shanghai",
+                "CNSX=37.7833=112.5500=Shanxi=Shanxi",
+                "CNSC=30.6667=104.0170=Sichuan=Sichuan",
+                "CNTJ=39.1833=117.3500=Tianjin=Tianjin",
+                "CNXJ=43.9000=87.4667=Xinjiang=Xinjiang",
+                "CNXZ=29.6667=91.1333=Xizang=Xizang",
+                "CNYN=25.0167=102.6830=Yunnan=Yunnan",
+                "CNZJ=30.2333=120.1670=Zhejiang=Zhejiang"
+                ]
+            },
+        {
+            'l':'5=7',
+            'as':[
+                "CNZJHY=38.8=119.9=Huzhou HZ=Huzhou",
+                "CNZJHZ=30.065175=102.195269=Hangzhou=Hangzhou",
+                "CNZJJH=29.107778=120=Jinhua=Jinhua",
+                "CNZJJX=30.770696=120.752378=Jiaxing=Jiaxing",
+                "CNZJLS=28.480321=119.930035=Lishui=Lishui",
+                "CNZJNB=29.8=121.55=Ningbo=Ningbo",
+                "CNZJQZ=28.942726=118.871851=Quzhou=Quzhou",
+                "CNZJSX=29.701667=120.6=Shaoxing=Shaoxing",
+                "CNZJTZ=28.683643=121.444462=Taizhou=Taizhou",
+                "CNZJWZ=28.019158=120.653923=Wenzhou=Wenzhou",
+                "CNZJZS=30.020324=122.111273=Zhoushan=Zhoushan"
+                ]
+            }
+        ]}
+
+
 
 #
 # Start a server instance
