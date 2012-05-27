@@ -740,8 +740,8 @@ def get_annotations(code):
         {
             'l':'5=7',
             'as':[
-                "CNZJHY=38.8=119.9=Huzhou HZ=Huzhou",
-                "CNZJHZ=30.065175=102.195269=Hangzhou=Hangzhou",
+                "CNZJHY=30.8943480=120.0868230=Huzhou=Huzhou",
+                "CNZJHZ=30.2333=120.1670=Hangzhou=Hangzhou",
                 "CNZJJH=29.107778=120=Jinhua=Jinhua",
                 "CNZJJX=30.770696=120.752378=Jiaxing=Jiaxing",
                 "CNZJLS=28.480321=119.930035=Lishui=Lishui",
