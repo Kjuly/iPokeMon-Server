@@ -698,7 +698,7 @@ def get_annotations(code):
         {
             'l':'1=2',
             'as' : [
-                "CN=39.9333=116.2830=Beijing=Beijing"
+                "CN=39.9333=116.2830=China=China"
                 ]
             },
         {
