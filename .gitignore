@@ -9,5 +9,7 @@
 
 # Ignore files
 ignorefiles/*
-
+bottle.pyc
 dump.rdb
+test.py
+
