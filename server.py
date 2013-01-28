@@ -2,6 +2,7 @@ from bottle import Bottle, run, request, response
 import redis
 from hashlib import md5
 import time
+import config
 
 server = Bottle()
 RADIS_HOST = '127.0.0.1'
@@ -15,7 +16,7 @@ class Header(object):
 
     # Make sure the request is sent via App
     def auth(self):
-        if self.headers.get('key') == 'iPokemonClient':
+        if self.headers.get('key') == config.PM_CLIENT_REQUEST_KEY:
             return True
         else:
             return False

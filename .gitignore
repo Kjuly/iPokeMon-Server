@@ -12,4 +12,5 @@ ignorefiles/*
 bottle.pyc
 dump.rdb
 test.py
+config.py
 
